@@ -12,9 +12,9 @@ Index: live-boot-grml/scripts/boot/9990-networking.sh
 @@ -153,7 +153,7 @@
  				echo "search ${DNSDOMAIN}" >> /etc/resolv.conf
  			fi
- 
+
 -			for i in ${IPV4DNS0} ${IPV4DNS1} ${IPV4DNS1}
-+			for i in ${IPV4DNS0} ${IPV4DNS1} ${IPV4DNS1} ${DNSSERVER1} ${DNSSERVER2}
++			for i in ${IPV4DNS0} ${IPV4DNS1} ${IPV4DNS2} ${DNSSERVER1} ${DNSSERVER2}
  			do
  				if [ -n "$i" ] && [ "$i" != 0.0.0.0 ]
  				then
@@ -23,7 +23,7 @@ Index: live-boot-grml/scripts/boot/9990-grml-networking.sh
 --- live-boot-grml.orig/scripts/boot/9990-grml-networking.sh	2012-11-28 17:46:38.000000000 +0100
 +++ live-boot-grml/scripts/boot/9990-grml-networking.sh	2012-11-28 17:46:56.190917365 +0100
 @@ -28,7 +28,12 @@
- 
+
  # prepare a new /etc/network/interfaces file (and, possibly, a new /etc/resolv.conf)
  IFFILE="/root/etc/network/interfaces"
 -RESOLVCONF="/root/etc/resolv.conf"
@@ -33,13 +33,13 @@ Index: live-boot-grml/scripts/boot/9990-grml-networking.sh
 +else
 +  RESOLVCONF="/root/etc/resolv.conf"
 +fi
- 
+
  # config for loopback networking
  cat > $IFFILE << EOF
 @@ -90,4 +95,18 @@
      echo>> $IFFILE
  done
- 
+
 +# dns bootoption
 +if [ -n "$DNSSERVER1" ]
 +then
@@ -48,7 +48,7 @@ Index: live-boot-grml/scripts/boot/9990-grml-networking.sh
 +	then
 +		sed -i 's/nameserver/# nameserver/' $RESOLVCONF
 +	fi
-+	for i in $DNSSERVER1 $DNSSERVER2
++	for i in $DNSSERVER1 $DNSSERVER2 $DNSSERVER3
 +	do
 +		echo "nameserver $i" >> $RESOLVCONF
 +	done
@@ -57,16 +57,17 @@ Index: live-boot-grml/scripts/boot/9990-grml-networking.sh
  }
 --- live-boot-grml.orig/scripts/boot/9990-cmdline-old	2012-11-28 17:46:38.000000000 +0100
 +++ live-boot-grml/scripts/boot/9990-cmdline-old	2012-11-28 17:46:56.190917365 +0100
-@@ -18,6 +18,19 @@
+@@ -18,6 +18,20 @@
  				BOOTIF="${x#BOOTIF=}"
  				;;
- 
+
 +			dns=*)
 +			  	DNSSERVER="${_PARAMETER#*=}"
 +				if echo "${DNSSERVER}" | grep -q , ; then
 +					DNSSERVER1="${DNSSERVER%,*}"
-+					DNSSERVER2="${DNSSERVER#*,}"
-+					export DNSSERVER1 DNSSERVER2
++					DNSSERVER2="${DNSSERVER%,*}"
++					DNSSERVER3="${DNSSERVER#*,}"
++					export DNSSERVER1 DNSSERVER2 DNSSERVER3
 +				else
 +					DNSSERVER1="$DNSSERVER"
 +					export DNSSERVER1
